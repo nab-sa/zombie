@@ -18,25 +18,39 @@ async function main() {
 	await mongoose.connect('mongodb://127.0.0.1:27017/monsters');
 }
 
-const monsters = [
-    {id: 1 ,name: 'Albert', level: 5, description: 'La vipère'},
-    {id: 2 ,name: 'Sandra', level: 3, description: 'Le loup garou'},
-    {id: 3 ,name: 'Mounir', level: 2, description: 'La vampire'}
-];
+app.use(express.urlencoded({ extended: true })); //Pass les infos dans le body
+
+
+const Monster = require('./models/monster');
+
+
+// const monsters = [
+//     {id: 1 ,name: 'Albert', level: 5, description: 'La vipère'},
+//     {id: 2 ,name: 'Sandra', level: 3, description: 'Le loup garou'},
+//     {id: 3 ,name: 'Mounir', level: 2, description: 'La vampire'}
+// ];
 
 app.get('/', (req, res) => {
-    res.send(monsters)
+    Monster.find({}, (err, monsters) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.send(monsters);
+        }
+    })
 })
 
-app.post('/add', (req, res) => {
-    monsters.push({
-        id: monsters[monsters.length - 1].id + 1,
-        name: req.query.name,
-        level: parseInt(req.query.level),
-        description: req.query.description
-    });
-    console.log(req.body);
-    res.send('Ok');
+app.post("/add", (req, res) => {
+  let newMonster = new Monster(req.body);
+  console.log(req.body);
+  newMonster.save((error, monster) => {
+    if (error) {
+      console.log(error);
+    } else {
+      res.send(monster);
+    }
+  });
+  // res.send('Ok');
 });
 
 app.get('/:id', (req, res) => {
